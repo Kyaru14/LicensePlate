@@ -67,7 +67,7 @@ if __name__ == '__main__':
     feature = train_dataset.x[0:tau]
     for i in range(0, 2000):
         y = net(feature)
-        feature = torch.concatenate([feature[1:], y])
+        feature = torch.cat([feature[1:], y])
         x_pred2[i + tau] = y
     plt.plot(x_pred2.detach())
     plt.show()
