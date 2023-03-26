@@ -119,6 +119,7 @@ if __name__ == "__main__":
     Onet = ONet().to(device)
     
     P_input = torch.Tensor(2, 3, 12, 47).to(device)
+    P_input = torch.Tensor(2, 3, 240, 480).to(device)
     P_offset, P_prob = Pnet(P_input)
     print('P_offset shape is', P_offset.shape)
     print('P_prob shape is', P_prob.shape)

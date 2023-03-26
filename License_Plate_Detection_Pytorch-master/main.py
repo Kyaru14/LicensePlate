@@ -19,12 +19,11 @@ import cv2
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='MTCNN & LPR Demo')
-    parser.add_argument("-image", help='image path', default='test/50.jpg', type=str)
+    parser.add_argument("--image", help='image path', default='test/107.png', type=str)
     parser.add_argument("--scale", dest='scale', help="scale the image", default=1, type=int)
     parser.add_argument('--mini_lp', dest='mini_lp', help="Minimum face to be detected", default=(50, 15), type=int)
     args = parser.parse_args()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    device = torch.device("cpu")
 
     lprnet = LPRNet(class_num=len(CHARS), dropout_rate=0)
     lprnet.to(device)
@@ -42,14 +41,13 @@ if __name__ == '__main__':
     image = cv2.imread(args.image)
     image = cv2.resize(image, (0, 0), fx = args.scale, fy = args.scale, interpolation=cv2.INTER_CUBIC)
     bboxes = create_mtcnn_net(image, args.mini_lp, device, p_model_path='MTCNN/weights/pnet_Weights', o_model_path='MTCNN/weights/onet_Weights')
-    
+
     for i in range(bboxes.shape[0]):
-         
         bbox = bboxes[i, :4]
-        x1, y1, x2, y2 = [int(bbox[j]) for j in range(4)]      
-        w = int(x2 - x1 + 1.0)
-        h = int(y2 - y1 + 1.0)
-        img_box = np.zeros((h, w, 3))
+        x1, y1, x2, y2 = [int(bbox[j]) for j in range(4)]
+        # w = int(x2 - x1 + 1.0)
+        # h = int(y2 - y1 + 1.0)
+        # img_box = np.zeros((h, w, 3))
         img_box = image[y1:y2+1, x1:x2+1, :]
         im = cv2.resize(img_box, (94, 24), interpolation=cv2.INTER_CUBIC)
         im = (np.transpose(np.float32(im), (2, 0, 1)) - 127.5)*0.0078125
@@ -61,6 +59,7 @@ if __name__ == '__main__':
     
         cv2.rectangle(image, (x1, y1), (x2, y2), (0, 0, 255), 1)
         image = cv2ImgAddText(image, labels[0], (x1, y1-12), textColor=(255, 255, 0), textSize=15)
+        print(bbox)
         print('result: ' + str(labels))
     
     print("model inference in {:2.3f} seconds".format(time.time() - since))

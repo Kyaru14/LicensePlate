@@ -2,7 +2,7 @@
     generate positive, negative, positive images whose size are 24*24 from Pnet and feed into RNet
 """
 import sys
-sys.path.append('..')
+sys.path.append('../..')
 import cv2
 import os
 import numpy as np
@@ -25,9 +25,9 @@ if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
 
 # store labels of positive, negative, part images
-f1 = open(os.path.join('anno_store', 'pos_24_val.txt'), 'w')
-f2 = open(os.path.join('anno_store', 'neg_24_val.txt'), 'w')
-f3 = open(os.path.join('anno_store', 'part_24_val.txt'), 'w')
+f1 = open(os.path.join('../data/train/anno_store', 'pos_24_val.txt'), 'w')
+f2 = open(os.path.join('../data/train/anno_store', 'neg_24_val.txt'), 'w')
+f3 = open(os.path.join('../data/train/anno_store', 'part_24_val.txt'), 'w')
 
 # anno_file: store labels of the wider face training data
 img_paths = []

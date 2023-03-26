@@ -5,7 +5,6 @@ import argparse
 import torch
 from model.MTCNN_nets import PNet, ONet
 import math
-import numpy as np
 from utils.util import *
 import cv2
 import time
@@ -88,7 +87,7 @@ def detect_pnet(pnet, image, min_lp_size, device):
                     score, offsets])
                 boxes = bounding_box.T
                 keep = nms(boxes[:, 0:5], overlap_threshold=0.5)
-                boxes[keep]
+                # boxes[keep]
 
             bounding_boxes.append(boxes)
 
@@ -158,7 +157,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='MTCNN Demo')
     parser.add_argument("--test_image", dest='test_image', help=
-    "test image path", default="test/28.jpg", type=str)
+    "test image path", default=r"D:\PycharmProjects\LicensePlate\License_Plate_Detection_Pytorch-master\test\8.jpg", type=str)
     parser.add_argument("--scale", dest='scale', help=
     "scale the iamge", default=1, type=int)
     parser.add_argument('--mini_lp', dest='mini_lp', help=

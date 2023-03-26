@@ -1,9 +1,8 @@
 import sys
 sys.path.append('..')
-import os 
+
 import torch
-from torch.utils.data import Dataset
-from Data_Loading import ListDataset
+from datasets.CCPDDataset import TrainDataset, ValDataset
 from model.MTCNN_nets import ONet
 import time
 import copy
@@ -14,14 +13,14 @@ def weights_init(m):
         nn.init.xavier_uniform_(m.weight.data)
         nn.init.constant_(m.bias, 0.1)
 
-train_path = '../../../data/train/anno_store/imglist_anno_24.txt'
-val_path = '../../../data/train/anno_store/imglist_anno_24_val.txt'
-batch_size = 64
-dataloaders = {'train': torch.utils.data.DataLoader(ListDataset(train_path), batch_size=batch_size, shuffle=True),
-               'val': torch.utils.data.DataLoader(ListDataset(val_path), batch_size=batch_size, shuffle=True)}
-dataset_sizes = {'train': len(ListDataset(train_path)), 'val': len(ListDataset(val_path))}
-print('training dataset loaded with length : {}'.format(len(ListDataset(train_path))))
-print('validation dataset loaded with length : {}'.format(len(ListDataset(val_path))))
+batch_size = 1
+train_dataset = TrainDataset(directory='ccpd_green')
+val_dataset = ValDataset(directory='ccpd_green')
+dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True),
+               'val': torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True)}
+dataset_sizes = {'train': len(train_dataset), 'val': len(val_dataset)}
+print('training dataset loaded with length : {}'.format(dataset_sizes['train']))
+print('validation dataset loaded with length : {}'.format(dataset_sizes['val']))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -61,8 +60,8 @@ for epoch in range(num_epochs):
         # iterate over data
         for i_batch, sample_batched in enumerate(dataloaders[phase]):
 
-            input_images, gt_label, gt_offset = sample_batched['input_img'], sample_batched[
-                'label'], sample_batched['bbox_target']
+            input_images, gt_label, gt_offset = sample_batched['input_img'],\
+                sample_batched['label'], sample_batched['bbox_target']
             input_images = input_images.to(device)
             gt_label = gt_label.to(device)
             # print('gt_label is ', gt_label)

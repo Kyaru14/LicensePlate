@@ -46,8 +46,8 @@ class ListDataset(Dataset):
 
 if __name__ == '__main__':
 
-    train_path = '../data_preprocessing/anno_store/imglist_anno_12.txt'
-    val_path = '../data_preprocessing/anno_store/imglist_anno_12_val.txt'
+    train_path = '../../../data/train/anno_store/imglist_anno_12.txt'
+    val_path = '../../../data/train/anno_store/imglist_anno_12.txt'
     batch_size = 8
     dataloaders = {'train': torch.utils.data.DataLoader(ListDataset(train_path), batch_size=batch_size, shuffle=True),
                    'val': torch.utils.data.DataLoader(ListDataset(val_path), batch_size=batch_size, shuffle=True)}

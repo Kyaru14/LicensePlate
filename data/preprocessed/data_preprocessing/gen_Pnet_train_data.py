@@ -18,10 +18,10 @@ import numpy as np
 from utils.util import *
 from imutils import paths
 
-img_dir = "../ccpd_green/val"
-pos_save_dir = "../data/train/positive"
-part_save_dir = "../data/train/part"
-neg_save_dir = "../data/train/negative"
+img_dir = "../ccpd_val"
+pos_save_dir = "../../train/positive_val"
+part_save_dir = "../../train/part_val"
+neg_save_dir = "../../train/negative_val"
 
 if not os.path.exists(pos_save_dir):
     os.mkdir(pos_save_dir)
@@ -31,9 +31,9 @@ if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
     
 # store labels of positive, negative, part images
-f1 = open(os.path.join('anno_store', 'pos_12_val.txt'), 'w')
-f2 = open(os.path.join('anno_store', 'neg_12_val.txt'), 'w')
-f3 = open(os.path.join('anno_store', 'part_12_val.txt'), 'w')
+f1 = open(os.path.join('../../train/anno_store', 'pos_12_val.txt'), 'w')
+f2 = open(os.path.join('../../train/anno_store', 'neg_12_val.txt'), 'w')
+f3 = open(os.path.join('../../train/anno_store', 'part_12_val.txt'), 'w')
 
 img_paths = []
 img_paths += [el for el in paths.list_images(img_dir)]

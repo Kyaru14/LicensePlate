@@ -14,10 +14,10 @@ import argparse
 import random
 
 parser = argparse.ArgumentParser(description='crop the licence plate from original image')
-parser.add_argument("-image", help='image path', default='../../ccpd_green', type=str)
-parser.add_argument("-dir_train", help='save directory', default='ccpd_train', type=str)
-parser.add_argument("-dir_val", help='save directory', default='ccpd_val', type=str)
-parser.add_argument("-size", help='the number of images to be saved', default=5000, type=int)
+parser.add_argument("-image", help='image path', default='../ccpd_green', type=str)
+parser.add_argument("-dir_train", help='save directory', default='../data/preprocessed/ccpd_train', type=str)
+parser.add_argument("-dir_val", help='save directory', default='../data/preprocessed/ccpd_val', type=str)
+parser.add_argument("-size", help='the number of images to be saved', default=10000, type=int)
 args = parser.parse_args()
 
 img_paths = []

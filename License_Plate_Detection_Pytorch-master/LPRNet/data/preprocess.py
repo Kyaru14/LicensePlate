@@ -21,7 +21,7 @@ ads = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q'
 
 
 parser = argparse.ArgumentParser(description='crop the licence plate from original image')
-parser.add_argument("-image", help='image path', default='../ccpd/ccpd_dataset/ccpd_base', type=str)
+parser.add_argument("-image", help='image path', default='../ccpd_green/ccpd_dataset/ccpd_base', type=str)
 parser.add_argument("-dir_train", help='save directory', default='train', type=str)
 parser.add_argument("-dir_val", help='save directory', default='validation', type=str)
 args = parser.parse_args()
