@@ -2,7 +2,7 @@ import sys
 sys.path.append('..')
 import os
 import torch
-from datasets.AnnoListDataset import AnnoListDataset
+from dataset.AnnoListDataset import AnnoListDataset
 from model.MTCNN_nets import PNet
 import time
 import copy
@@ -28,7 +28,7 @@ with train_dataset, val_dataset:
 
     # load the model and weights for initialization
     model = PNet(is_train=True).to(device)
-    state_dict = torch.load('weights/pnet_Weights')
+    state_dict = torch.load('data/net/pnet_Weights')
     model.load_state_dict(state_dict)
     model.apply(weights_init)
     print("Pnet loaded")

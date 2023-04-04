@@ -1,24 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 12 09:37:49 2019
-
-@author: xingyu
-"""
-
-"""
-    generate positive, negative, positive images whose size are 12*47 and feed into PNet
-"""
 import sys
-sys.path.append('../..')
+sys.path.append('..')
 import cv2
 import random
 import os
 import numpy as np
 from utils.util import *
-from imutils import paths
+from dataset.CCPD import ImageFolder
 
-img_dir = "../data/preprocessed/ccpd_train"
+img_dir = "data/preprocessed/ccpd_train_split"
 pos_save_dir = "../data/train/positive"
 part_save_dir = "../data/train/part"
 neg_save_dir = "../data/train/negative"
@@ -29,36 +18,26 @@ if not os.path.exists(part_save_dir):
     os.mkdir(part_save_dir)
 if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
-    
+
 # store labels of positive, negative, part images
-f1 = open(os.path.join('../data/train/anno_store', 'pos_12.txt'), 'w')
-f2 = open(os.path.join('../data/train/anno_store', 'neg_12.txt'), 'w')
-f3 = open(os.path.join('../data/train/anno_store', 'part_12.txt'), 'w')
+f1 = open(os.path.join('data', 'pos_12.txt'), 'w')
+f2 = open(os.path.join('data', 'neg_12.txt'), 'w')
+f3 = open(os.path.join('data', 'part_12.txt'), 'w')
 
-img_paths = []
-img_paths += [el for el in paths.list_images(img_dir)]
-random.shuffle(img_paths)
-num = len(img_paths)
-print("%d pics in total" % num)
+dataset = ImageFolder.TrainFolder(green_directory=img_dir)
 
-p_idx = 0 # positive
-n_idx = 0 # negative
-d_idx = 0 # dont care
+p_idx = 0  # positive
+n_idx = 0  # negative
+d_idx = 0  # dont care
 idx = 0
-for annotation in img_paths:
-    im_path = annotation
-    print(im_path)
-    
-    basename = os.path.basename(im_path)
-    imgname, suffix = os.path.splitext(basename)
-    imgname_split = imgname.split('-')
-    rec_x1y1 = imgname_split[2].split('_')[0].split('&')
-    rec_x2y2 = imgname_split[2].split('_')[1].split('&')  
-    x1, y1, x2, y2 = int(rec_x1y1[0]), int(rec_x1y1[1]), int(rec_x2y2[0]), int(rec_x2y2[1])
-    
-    boxes = np.zeros((1,4), dtype=np.int32)
-    boxes[0,0], boxes[0,1], boxes[0,2], boxes[0,3] = x1, y1, x2, y2
-    
+for image_file in dataset.files:
+    im_path = image_file.file_path
+
+    basename = image_file.basename
+
+    boxes = np.zeros((1, 4), dtype=np.int32)
+    boxes[0, :] = image_file.bbox
+
     img = cv2.imread(im_path)
     idx += 1
 

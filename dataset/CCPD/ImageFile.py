@@ -12,7 +12,7 @@ class ImageFile:
         "6", "7", "8", "9"
     ]
 
-    con_list = [
+    char_list = [
         "皖", "沪", "津", "渝", "冀",
         "晋", "蒙", "辽", "吉", "黑",
         "苏", "浙", "京", "闽", "赣",
@@ -23,9 +23,9 @@ class ImageFile:
     ]
     def __init__(self, file_path):
         self.file_path = file_path
-        basename = os.path.basename(file_path)
+        self.basename = os.path.basename(file_path)
         pattern = re.compile('(.+)-(.+)-(.+)-(.+)-(.+)-(.+)-(.+).jpg')
-        matcher = re.match(pattern, basename)
+        matcher = re.match(pattern, self.basename)
         pattern2 = re.compile('(\\d+)_(\\d+)')
         pattern3 = re.compile('(\\d+)&(\\d+)_(\\d+)&(\\d+)')
         matcher2 = re.match(pattern2, matcher.group(2))
@@ -38,12 +38,17 @@ class ImageFile:
         self.label = ''
         for i, num in enumerate(self.code):
             if i == 0:
-                self.label += ImageFile.con_list[num]
+                self.label += ImageFile.char_list[num]
             else:
                 self.label += ImageFile.words_list[num]
 
     def __repr__(self):
         return f'<class ImageFile> angle: {self.horizon_angle}, {self.vertical_angle} points: {self.points} label:{self.label}'
+
+    @property
+    def bbox(self):
+        return self.points
+
 
 if __name__ == '__main__':
     print(ImageFile(
