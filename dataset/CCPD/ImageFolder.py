@@ -9,8 +9,8 @@ from dataset.CCPD.ImageFile import ImageFile
 
 
 class TrainFolder(data.Dataset):
-    def __init__(self, green_directory: str):
-        self.directory = os.path.join(green_directory)
+    def __init__(self, directory: str):
+        self.directory = os.path.join(directory)
         self.files = []
         for filename in os.listdir(self.directory):
             self.files.append(ImageFile(os.path.join(self.directory, filename)))
@@ -35,13 +35,13 @@ class TrainFolder(data.Dataset):
 
 
 class TestFolder(TrainFolder):
-    def __init__(self, *, green_directory: str, mode: str = 'test'):
-        super().__init__(green_directory=green_directory)
+    def __init__(self, *, directory: str, mode: str = 'test'):
+        super().__init__(directory=directory)
 
 
 class ValFolder(TrainFolder):
-    def __init__(self, *, green_directory: str, mode: str = 'val'):
-        super().__init__(green_directory=green_directory)
+    def __init__(self, *, directory: str, mode: str = 'val'):
+        super().__init__(directory=directory)
 
 if __name__ == '__main__':
-    print(ValFolder(green_directory='../License_Plate_Detection_Pytorch-master/ccpd_green').files)
+    print(ValFolder(directory='../License_Plate_Detection_Pytorch-master/ccpd_green').files)

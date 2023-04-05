@@ -143,4 +143,4 @@ with train_dataset, val_dataset:
     print('Best loss: {:4f}'.format(best_loss))
 
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), 'pnet_Weights')
+    torch.save(model.state_dict(), 'weights\pnet_Weights')

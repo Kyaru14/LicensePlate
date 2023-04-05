@@ -2,7 +2,7 @@ import sys
 sys.path.append('..')
 
 import torch
-from dataset.CCPDDataset import TrainDataset, ValDataset
+from datasets.CCPDDataset import TrainDataset, ValDataset
 from model.MTCNN_nets import ONet
 import time
 import copy

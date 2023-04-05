@@ -6,11 +6,15 @@ import os
 import numpy as np
 from utils.util import *
 from dataset.CCPD import ImageFolder
+from dataset.YellowPlateDataset import YellowPlateDataset
+
+from tqdm import tqdm
 
 img_dir = "data/preprocessed/ccpd_train_split"
-pos_save_dir = "../data/train/positive"
-part_save_dir = "../data/train/part"
-neg_save_dir = "../data/train/negative"
+yellow_dir = "ccpd/yellow"
+pos_save_dir = "data/train/positive"
+part_save_dir = "data/train/part"
+neg_save_dir = "data/train/negative"
 
 if not os.path.exists(pos_save_dir):
     os.mkdir(pos_save_dir)
@@ -24,19 +28,26 @@ f1 = open(os.path.join('data', 'pos_12.txt'), 'w')
 f2 = open(os.path.join('data', 'neg_12.txt'), 'w')
 f3 = open(os.path.join('data', 'part_12.txt'), 'w')
 
-dataset = ImageFolder.TrainFolder(green_directory=img_dir)
+dataset = ImageFolder.TrainFolder(directory=img_dir)
+yellow_dataset = YellowPlateDataset(directory=yellow_dir)
 
 p_idx = 0  # positive
 n_idx = 0  # negative
 d_idx = 0  # dont care
 idx = 0
-for image_file in dataset.files:
-    im_path = image_file.file_path
+image_list = []
+for file in dataset.files:
+    image_list.append((file.file_path, file.bbox))
+for path, points in yellow_dataset:
+    image_list.append((path, points))
+print(f'{len(image_list)} in total')
+for path, points in image_list:
+    im_path = path
 
-    basename = image_file.basename
+    basename = os.path.basename(path)
 
     boxes = np.zeros((1, 4), dtype=np.int32)
-    boxes[0, :] = image_file.bbox
+    boxes[0, :] = points
 
     img = cv2.imread(im_path)
     idx += 1

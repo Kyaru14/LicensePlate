@@ -9,13 +9,12 @@ import numpy as np
 from utils.util import*
 import torch
 import random
-from imutils import paths
 from MTCNN import create_mtcnn_net
 
-img_dir = "../data_set/ccpd_val"
-pos_save_dir = "../data_set/val/24/positive"
-part_save_dir = "../data_set/val/24/part"
-neg_save_dir = "../data_set/val/24/negative"
+img_dir = "../data/preprocessed/ccpd_val"
+pos_save_dir = "/mnt/d/Programs/Python/DeepLearning/licenseplate/data/train/24/positive_val"
+part_save_dir = "/mnt/d/Programs/Python/DeepLearning/licenseplate/data/train/24/part_val"
+neg_save_dir = "/mnt/d/Programs/Python/DeepLearning/licenseplate/data/train/24/negative_val"
 
 if not os.path.exists(pos_save_dir):
     os.mkdir(pos_save_dir)
@@ -58,7 +57,7 @@ for annotation in img_paths:
 
     image = cv2.imread(im_path)
 
-    bboxes = create_mtcnn_net(image, 50, device, p_model_path='../train/pnet_Weights', r_model_path=None, o_model_path=None)
+    bboxes = create_mtcnn_net(image, (50, 15), device, p_model_path='../weights/pnet_Weights', o_model_path=None)
     dets = np.round(bboxes[:, 0:4])
 
     if dets.shape[0] == 0:
