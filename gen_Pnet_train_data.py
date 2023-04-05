@@ -12,9 +12,9 @@ from tqdm import tqdm
 
 img_dir = "data/preprocessed/ccpd_train_split"
 yellow_dir = "ccpd/yellow"
-pos_save_dir = "data/train/positive"
-part_save_dir = "data/train/part"
-neg_save_dir = "data/train/negative"
+pos_save_dir = "data/train/pnet/positive"
+part_save_dir = "data/train/pnet/part"
+neg_save_dir = "data/train/pnet/negative"
 
 if not os.path.exists(pos_save_dir):
     os.mkdir(pos_save_dir)
@@ -24,9 +24,9 @@ if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
 
 # store labels of positive, negative, part images
-f1 = open(os.path.join('data', 'pos_12.txt'), 'w')
-f2 = open(os.path.join('data', 'neg_12.txt'), 'w')
-f3 = open(os.path.join('data', 'part_12.txt'), 'w')
+f1 = open(os.path.join('data', 'pos_pnet.txt'), 'w')
+f2 = open(os.path.join('data', 'neg_pnet.txt'), 'w')
+f3 = open(os.path.join('data', 'part_pnet.txt'), 'w')
 
 dataset = ImageFolder.TrainFolder(directory=img_dir)
 yellow_dataset = YellowPlateDataset(directory=yellow_dir)
@@ -80,6 +80,8 @@ for path, points in image_list:
         x1, y1, x2, y2 = box
         w = x2 - x1 + 1
         h = y2 - y1 + 1
+        if int(w * 0.2) <= 0 or int(h * 0.2) <= 0:
+            continue
 
         # generate negative examples that have overlap with gt
         for i in range(5):
