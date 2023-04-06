@@ -26,7 +26,7 @@ class AnnoListDataset(data.Dataset):
         annotation = img_file_annotation
 
         img = cv2.imread(annotation[0])
-        img = img[:,:,::-1]
+        img = img[:, :, ::-1]
         img = np.asarray(img, 'float32')
         img = img.transpose((2, 0, 1))
         img = (img - 127.5) * 0.0078125
@@ -34,15 +34,11 @@ class AnnoListDataset(data.Dataset):
 
         label = int(annotation[1])
         bbox_target = np.zeros((4,))
-        landmark = np.zeros((10,))
 
         if len(annotation[2:]) == 4:
             bbox_target = np.array(annotation[2:6]).astype(float)
-        if len(annotation[2:]) == 14:
-            bbox_target = np.array(annotation[2:6]).astype(float)
-            landmark = np.array(annotation[6:]).astype(float)
 
-        sample = {'input_img': input_img, 'label': label, 'bbox_target': bbox_target, 'landmark': landmark}
+        sample = {'input_img': input_img, 'label': label, 'bbox_target': bbox_target}
 
         return sample
 

@@ -3,11 +3,18 @@ import sys
 sys.path.append(os.getcwd())
 import assemble
 
-onet_postive_file = '../data/train/anno_store/pos_24_val.txt'
-onet_part_file = '../data/train/anno_store/part_24_val.txt'
-onet_neg_file = '../data/train/anno_store/neg_24_val.txt'
-# pnet_landmark_file = './anno_store/landmark_12.txt'
-imglist_filename = '../data/train/anno_store/imglist_anno_24_val.txt'
+mode = 'val'
+
+if mode == 'train':
+    onet_postive_file = 'data/train/pos_onet.txt'
+    onet_part_file = 'data/train/part_onet.txt'
+    onet_neg_file = 'data/train/neg_onet.txt'
+    imglist_filename = 'data/train/imglist_onet.txt'
+elif mode == 'val':
+    onet_postive_file = 'data/val/pos_onet.txt'
+    onet_part_file = 'data/val/part_onet.txt'
+    onet_neg_file = 'data/val/neg_onet.txt'
+    imglist_filename = 'data/val/imglist_onet.txt'
 
 if __name__ == '__main__':
 
@@ -18,4 +25,4 @@ if __name__ == '__main__':
     anno_list.append(onet_neg_file)
 
     chose_count = assemble.assemble_data(imglist_filename, anno_list)
-    print("RNet train annotation result file path:%s" % imglist_filename)
+    print("ONet train annotation result file path:%s" % imglist_filename)

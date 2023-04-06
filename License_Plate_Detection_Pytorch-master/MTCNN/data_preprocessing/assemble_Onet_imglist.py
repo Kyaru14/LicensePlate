@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.append(os.getcwd())
 import assemble
 
@@ -10,7 +11,6 @@ onet_neg_file = 'anno_store/neg_24_val.txt'
 imglist_filename = 'anno_store/imglist_anno_24_val.txt'
 
 if __name__ == '__main__':
-
     anno_list = []
 
     anno_list.append(onet_postive_file)

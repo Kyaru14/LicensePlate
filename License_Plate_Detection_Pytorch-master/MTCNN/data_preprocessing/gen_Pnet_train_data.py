@@ -10,6 +10,7 @@ Created on Fri Jul 12 09:37:49 2019
     generate positive, negative, positive images whose size are 12*47 and feed into PNet
 """
 import sys
+
 sys.path.append('../..')
 import cv2
 import random
@@ -29,7 +30,7 @@ if not os.path.exists(part_save_dir):
     os.mkdir(part_save_dir)
 if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
-    
+
 # store labels of positive, negative, part images
 f1 = open(os.path.join('anno_store', 'pos_12_val.txt'), 'w')
 f2 = open(os.path.join('anno_store', 'neg_12_val.txt'), 'w')
@@ -41,29 +42,29 @@ random.shuffle(img_paths)
 num = len(img_paths)
 print("%d pics in total" % num)
 
-p_idx = 0 # positive
-n_idx = 0 # negative
-d_idx = 0 # dont care
+p_idx = 0  # positive
+n_idx = 0  # negative
+d_idx = 0  # dont care
 idx = 0
 for annotation in img_paths:
     im_path = annotation
     print(im_path)
-    
+
     basename = os.path.basename(im_path)
     imgname, suffix = os.path.splitext(basename)
     imgname_split = imgname.split('-')
     rec_x1y1 = imgname_split[2].split('_')[0].split('&')
-    rec_x2y2 = imgname_split[2].split('_')[1].split('&')  
+    rec_x2y2 = imgname_split[2].split('_')[1].split('&')
     x1, y1, x2, y2 = int(rec_x1y1[0]), int(rec_x1y1[1]), int(rec_x2y2[0]), int(rec_x2y2[1])
-    
-    boxes = np.zeros((1,4), dtype=np.int32)
-    boxes[0,0], boxes[0,1], boxes[0,2], boxes[0,3] = x1, y1, x2, y2
-    
+
+    boxes = np.zeros((1, 4), dtype=np.int32)
+    boxes[0, 0], boxes[0, 1], boxes[0, 2], boxes[0, 3] = x1, y1, x2, y2
+
     img = cv2.imread(im_path)
     idx += 1
 
     height, width, channel = img.shape
-    
+
     neg_num = 0
     while neg_num < 35:
         size_x = np.random.randint(47, min(width, height) / 2)
@@ -84,7 +85,7 @@ for annotation in img_paths:
             cv2.imwrite(save_file, resized_im)
             n_idx += 1
             neg_num += 1
-            
+
     for box in boxes:
         # box (x_left, y_top, w, h)
         x1, y1, x2, y2 = box
@@ -147,17 +148,14 @@ for annotation in img_paths:
                 f1.write(save_file + ' 1 %.2f %.2f %.2f %.2f\n' % (offset_x1, offset_y1, offset_x2, offset_y2))
                 cv2.imwrite(save_file, resized_im)
                 p_idx += 1
-            elif IoU(crop_box, box_) >= 0.4 and d_idx < 1.2*p_idx + 1:
+            elif IoU(crop_box, box_) >= 0.4 and d_idx < 1.2 * p_idx + 1:
                 save_file = os.path.join(part_save_dir, "%s.jpg" % d_idx)
                 f3.write(save_file + ' -1 %.2f %.2f %.2f %.2f\n' % (offset_x1, offset_y1, offset_x2, offset_y2))
                 cv2.imwrite(save_file, resized_im)
                 d_idx += 1
-
-
 
     print("%s images done, pos: %s part: %s neg: %s" % (idx, p_idx, d_idx, n_idx))
 
 f1.close()
 f2.close()
 f3.close()
-        

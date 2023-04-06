@@ -1,6 +1,7 @@
 import sys
+
 sys.path.append('..')
-import os 
+import os
 import torch
 from torch.utils.data import Dataset
 from Data_Loading import ListDataset
@@ -9,10 +10,12 @@ import time
 import copy
 import torch.nn as nn
 
+
 def weights_init(m):
     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
         nn.init.xavier_uniform_(m.weight.data)
         nn.init.constant_(m.bias, 0.1)
+
 
 train_path = '../../../data/train/anno_store/imglist_anno_24.txt'
 val_path = '../../../data/train/anno_store/imglist_anno_24_val.txt'
@@ -44,7 +47,7 @@ loss_offset = nn.MSELoss()
 
 num_epochs = 16
 for epoch in range(num_epochs):
-    print('Epoch {}/{}'.format(epoch, num_epochs-1))
+    print('Epoch {}/{}'.format(epoch, num_epochs - 1))
     print('-' * 10)
 
     # Each epoch has a training and validation phase
@@ -97,13 +100,13 @@ for epoch in range(num_epochs):
                 num_gt = len(valid_gt_label)
 
                 if len(valid_gt_label) != 0:
-                    loss += 0.02*loss_cls(valid_pred_label, valid_gt_label)
+                    loss += 0.02 * loss_cls(valid_pred_label, valid_gt_label)
                     cls_loss = loss_cls(valid_pred_label, valid_gt_label).item()
                     pred = torch.max(valid_pred_label, 1)[1]
                     eval_correct = (pred == valid_gt_label).sum().item()
 
                 if len(valid_gt_offset) != 0:
-                    loss += 0.6*loss_offset(valid_pred_offset, valid_gt_offset)
+                    loss += 0.6 * loss_offset(valid_pred_offset, valid_gt_offset)
                     offset_loss = loss_offset(valid_pred_offset, valid_gt_offset).item()
 
                 # backward + optimize only if in training phase
@@ -112,9 +115,9 @@ for epoch in range(num_epochs):
                     optimizer.step()
 
                 # statistics
-                running_loss += loss.item()*batch_size
-                running_loss_cls += cls_loss*batch_size
-                running_loss_offset += offset_loss*batch_size
+                running_loss += loss.item() * batch_size
+                running_loss_cls += cls_loss * batch_size
+                running_loss_offset += offset_loss * batch_size
                 running_correct += eval_correct
                 running_gt += num_gt
 
@@ -127,7 +130,7 @@ for epoch in range(num_epochs):
               .format(phase, epoch_loss, epoch_accuracy, epoch_loss_cls, epoch_loss_offset))
         with open(train_logging_file, 'a') as f:
             f.write('{} Loss: {:.4f} accuracy: {:.4f} cls Loss: {:.4f} offset Loss: {:.4f}'
-                    .format(phase, epoch_loss, epoch_accuracy, epoch_loss_cls, epoch_loss_offset)+'\n')
+                    .format(phase, epoch_loss, epoch_accuracy, epoch_loss_cls, epoch_loss_offset) + '\n')
         f.close()
 
         # deep copy the model
@@ -140,4 +143,4 @@ print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_ela
 print('Best loss: {:4f}'.format(best_loss))
 
 model.load_state_dict(best_model_wts)
-torch.save(model.state_dict(), 'onet_Weights')
+torch.save(model.state_dict(), 'onet.weights')

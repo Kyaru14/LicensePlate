@@ -2,11 +2,12 @@
     generate positive, negative, positive images whose size are 24*24 from Pnet and feed into RNet
 """
 import sys
+
 sys.path.append('../..')
 import cv2
 import os
 import numpy as np
-from utils.util import*
+from utils.util import *
 import torch
 import random
 from imutils import paths
@@ -38,27 +39,28 @@ print("%d pics in total" % num)
 
 image_size = (94, 24)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-p_idx = 0 # positive
-n_idx = 0 # negative
-d_idx = 0 # dont care
+p_idx = 0  # positive
+n_idx = 0  # negative
+d_idx = 0  # dont care
 idx = 0
 for annotation in img_paths:
     im_path = annotation
     print(im_path)
-    
+
     basename = os.path.basename(im_path)
     imgname, suffix = os.path.splitext(basename)
     imgname_split = imgname.split('-')
     rec_x1y1 = imgname_split[2].split('_')[0].split('&')
-    rec_x2y2 = imgname_split[2].split('_')[1].split('&')  
+    rec_x2y2 = imgname_split[2].split('_')[1].split('&')
     x1, y1, x2, y2 = int(rec_x1y1[0]), int(rec_x1y1[1]), int(rec_x2y2[0]), int(rec_x2y2[1])
-    
-    boxes = np.zeros((1,4), dtype=np.int32)
-    boxes[0,0], boxes[0,1], boxes[0,2], boxes[0,3] = x1, y1, x2, y2
+
+    boxes = np.zeros((1, 4), dtype=np.int32)
+    boxes[0, 0], boxes[0, 1], boxes[0, 2], boxes[0, 3] = x1, y1, x2, y2
 
     image = cv2.imread(im_path)
 
-    bboxes = create_mtcnn_net(image, 50, device, p_model_path='../train/pnet_Weights', r_model_path=None, o_model_path=None)
+    bboxes = create_mtcnn_net(image, 50, device, p_model_path='../train/pnet.weights', r_model_path=None,
+                              o_model_path=None)
     dets = np.round(bboxes[:, 0:4])
 
     if dets.shape[0] == 0:
@@ -84,7 +86,7 @@ for annotation in img_paths:
         resized_im = cv2.resize(cropped_im, image_size, interpolation=cv2.INTER_LINEAR)
 
         # save negative images and write label
-        if np.max(Iou) < 0.3 and n_idx < 3.2*p_idx+1:
+        if np.max(Iou) < 0.3 and n_idx < 3.2 * p_idx + 1:
             # Iou with all gts must below 0.3
             save_file = os.path.join(neg_save_dir, "%s.jpg" % n_idx)
             f2.write(save_file + ' 0\n')
@@ -110,7 +112,7 @@ for annotation in img_paths:
                 cv2.imwrite(save_file, resized_im)
                 p_idx += 1
 
-            elif np.max(Iou) >= 0.4 and d_idx < 1.2*p_idx + 1:
+            elif np.max(Iou) >= 0.4 and d_idx < 1.2 * p_idx + 1:
                 save_file = os.path.join(part_save_dir, "%s.jpg" % d_idx)
                 f3.write(save_file + ' -1 %.2f %.2f %.2f %.2f\n' % (
                     offset_x1, offset_y1, offset_x2, offset_y2))
@@ -122,10 +124,3 @@ for annotation in img_paths:
 f1.close()
 f2.close()
 f3.close()
-
-
-
-
-
-
-

@@ -1,6 +1,5 @@
 import sys
 import os
-sys.path.append(os.getcwd())
 import argparse
 import torch
 from model.MTCNN_nets import PNet, ONet
@@ -9,8 +8,10 @@ from utils.util import *
 import cv2
 import time
 
-def create_mtcnn_net(image, mini_lp_size, device, p_model_path=None, o_model_path=None):
+sys.path.append(os.getcwd())
 
+
+def create_mtcnn_net(image, mini_lp_size, device, p_model_path=None, o_model_path=None):
     bboxes = np.array([])
 
     if p_model_path is not None:
@@ -29,11 +30,11 @@ def create_mtcnn_net(image, mini_lp_size, device, p_model_path=None, o_model_pat
 
     return bboxes
 
-def detect_pnet(pnet, image, min_lp_size, device):
 
+def detect_pnet(pnet, image, min_lp_size, device):
     # start = time.time()
 
-    thresholds = 0.6 # lp detection thresholds
+    thresholds = 0.6  # lp detection thresholds
     nms_thresholds = 0.7
 
     # BUILD AN IMAGE PYRAMID
@@ -49,7 +50,7 @@ def detect_pnet(pnet, image, min_lp_size, device):
     while min_height > min_lp_size[1] and min_width > min_lp_size[0]:
         scales.append(factor ** factor_count)
         min_height *= factor
-        min_width *=factor
+        min_width *= factor
         factor_count += 1
 
     # it will be returned
@@ -65,7 +66,7 @@ def detect_pnet(pnet, image, min_lp_size, device):
             probs = prob.cpu().data.numpy()[0, 1, :, :]  # probs: probability of a face at each sliding window
             offsets = offset.cpu().data.numpy()  # offsets: transformations to true bounding boxes
             # applying P-Net is equivalent, in some sense, to moving 12x12 window with stride 2
-            stride, cell_size = (2,5), (12,44)
+            stride, cell_size = (2, 5), (12, 44)
             # indices of boxes where there is probably a lp
             # returns a tuple with an array of row idx's, and an array of col idx's:
             inds = np.where(probs > thresholds)
@@ -93,13 +94,13 @@ def detect_pnet(pnet, image, min_lp_size, device):
 
         # collect boxes (and offsets, and scores) from different scales
         bounding_boxes = [i for i in bounding_boxes if i is not None]
-        
+
         if bounding_boxes != []:
             bounding_boxes = np.vstack(bounding_boxes)
             keep = nms(bounding_boxes[:, 0:5], nms_thresholds)
             bounding_boxes = bounding_boxes[keep]
         else:
-            bounding_boxes = np.zeros((1,9))
+            bounding_boxes = np.zeros((1, 9))
         # use offsets predicted by pnet to transform bounding boxes
         bboxes = calibrate_box(bounding_boxes[:, 0:5], bounding_boxes[:, 5:])
         # shape [n_boxes, 5],  x1, y1, x2, y2, score
@@ -110,11 +111,11 @@ def detect_pnet(pnet, image, min_lp_size, device):
 
         return bboxes
 
-def detect_onet(onet, image, bboxes, device):
 
+def detect_onet(onet, image, bboxes, device):
     # start = time.time()
 
-    size = (94,24)
+    size = (94, 24)
     thresholds = 0.8  # face detection thresholds
     nms_thresholds = 0.7
     height, width, channel = image.shape
@@ -144,7 +145,7 @@ def detect_onet(onet, image, bboxes, device):
     bboxes = bboxes[keep]
     bboxes[:, 4] = probs[keep, 1].reshape((-1,))  # assign score from stage 2
     offsets = offsets[keep]
-    
+
     bboxes = calibrate_box(bboxes, offsets)
     keep = nms(bboxes, nms_thresholds, mode='min')
     bboxes = bboxes[keep]
@@ -153,11 +154,13 @@ def detect_onet(onet, image, bboxes, device):
 
     return bboxes
 
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='MTCNN Demo')
     parser.add_argument("--test_image", dest='test_image', help=
-    "test image path", default=r"D:\PycharmProjects\LicensePlate\License_Plate_Detection_Pytorch-master\test\8.jpg", type=str)
+    "test image path", default=r"License_Plate_Detection_Pytorch-master/test/101.jpg",
+                        type=str)
     parser.add_argument("--scale", dest='scale', help=
     "scale the iamge", default=1, type=int)
     parser.add_argument('--mini_lp', dest='mini_lp', help=
@@ -168,19 +171,20 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     image = cv2.imread(args.test_image)
-    image = cv2.resize(image, (0, 0), fx = args.scale, fy = args.scale, interpolation=cv2.INTER_CUBIC)
+    image = cv2.resize(image, (0, 0), fx=args.scale, fy=args.scale, interpolation=cv2.INTER_CUBIC)
 
     start = time.time()
 
-    bboxes = create_mtcnn_net(image, args.mini_lp, device, p_model_path='weights/pnet_Weights', o_model_path='weights/onet_Weights')
+    bboxes = create_mtcnn_net(image, args.mini_lp, device, p_model_path='data/net/pnet.weights',
+                              o_model_path='data/net/onet.weights')
 
     print("image predicted in {:2.3f} seconds".format(time.time() - start))
 
     for i in range(bboxes.shape[0]):
         bbox = bboxes[i, :4]
         cv2.rectangle(image, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 0, 255), 2)
-        
-    image = cv2.resize(image, (0, 0), fx = 1/args.scale, fy = 1/args.scale, interpolation=cv2.INTER_CUBIC)
+
+    image = cv2.resize(image, (0, 0), fx=1 / args.scale, fy=1 / args.scale, interpolation=cv2.INTER_CUBIC)
     cv2.imshow('image', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

@@ -9,6 +9,7 @@ Created on Wed Jul  3 13:14:16 2019
 import torch.nn as nn
 import torch
 
+
 class small_basic_block(nn.Module):
     def __init__(self, ch_in, ch_out):
         super(small_basic_block, self).__init__()
@@ -21,27 +22,29 @@ class small_basic_block(nn.Module):
             nn.ReLU(),
             nn.Conv2d(ch_out // 4, ch_out, kernel_size=1),
         )
+
     def forward(self, x):
         return self.block(x)
+
 
 class LPRNet(nn.Module):
     def __init__(self, class_num, dropout_rate):
         super(LPRNet, self).__init__()
         self.class_num = class_num
         self.backbone = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1),  # 0
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),  # 2
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
-            small_basic_block(ch_in=64, ch_out=128),    # *** 4 ***
+            small_basic_block(ch_in=64, ch_out=128),  # *** 4 ***
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(),  # 6
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
-            small_basic_block(ch_in=64, ch_out=256),   # 8
+            small_basic_block(ch_in=64, ch_out=256),  # 8
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),  # 10
-            small_basic_block(ch_in=256, ch_out=256),   # *** 11 ***
-            nn.BatchNorm2d(num_features=256),   # 12
+            small_basic_block(ch_in=256, ch_out=256),  # *** 11 ***
+            nn.BatchNorm2d(num_features=256),  # 12
             nn.ReLU(),
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(4, 1, 2)),  # 14
             nn.Dropout(dropout_rate),
@@ -49,12 +52,13 @@ class LPRNet(nn.Module):
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),  # 18
             nn.Dropout(dropout_rate),
-            nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1), # 20
+            nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1),  # 20
             nn.BatchNorm2d(num_features=class_num),
             nn.ReLU(),  # *** 22 ***
         )
         self.container = nn.Sequential(
-            nn.Conv2d(in_channels=256+class_num+128+64, out_channels=self.class_num, kernel_size=(1,1), stride=(1,1)),
+            nn.Conv2d(in_channels=256 + class_num + 128 + 64, out_channels=self.class_num, kernel_size=(1, 1),
+                      stride=(1, 1)),
             # nn.BatchNorm2d(num_features=self.class_num),
             # nn.ReLU(),
             # nn.Conv2d(in_channels=self.class_num, out_channels=self.lpr_max_len+1, kernel_size=3, stride=2),
@@ -65,7 +69,7 @@ class LPRNet(nn.Module):
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
             x = layer(x)
-            if i in [2, 6, 13, 22]: # [2, 4, 8, 11, 22]
+            if i in [2, 6, 13, 22]:  # [2, 4, 8, 11, 22]
                 keep_features.append(x)
 
         global_context = list()
@@ -84,22 +88,22 @@ class LPRNet(nn.Module):
         logits = torch.mean(x, dim=2)
 
         return logits
-    
+
+
 CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
-     '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
-     '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
-     '新',
-     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
-     'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-     'W', 'X', 'Y', 'Z', 'I', 'O', '-'
-     ]
-    
+         '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
+         '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
+         '新',
+         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
+         'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+         'W', 'X', 'Y', 'Z', 'I', 'O', '-'
+         ]
+
 if __name__ == "__main__":
-    
-    from torchsummary import summary  
-    
+    from torchsummary import summary
+
     lprnet = LPRNet(class_num=len(CHARS), dropout_rate=0)
     print(lprnet)
-    
-    summary(lprnet, (3,24,94), device="cpu")
+
+    summary(lprnet, (3, 24, 94), device="cpu")

@@ -5,16 +5,35 @@ import random
 import os
 import numpy as np
 from utils.util import *
-from dataset.CCPD import ImageFolder
+from dataset.CCPD import CCPDDataset
 from dataset.YellowPlateDataset import YellowPlateDataset
 
 from tqdm import tqdm
 
-img_dir = "data/preprocessed/ccpd_train_split"
-yellow_dir = "ccpd/yellow"
-pos_save_dir = "data/train/pnet/positive"
-part_save_dir = "data/train/pnet/part"
-neg_save_dir = "data/train/pnet/negative"
+mode = 'val'
+
+if mode == 'train':
+    img_dir = "data/preprocessed/ccpd_train_split"
+    yellow_dir = "data/preprocessed/ccpd_train_split/yellow"
+    pos_save_dir = "data/train/pnet/positive"
+    part_save_dir = "data/train/pnet/part"
+    neg_save_dir = "data/train/pnet/negative"
+
+    # store labels of positive, negative, part images
+    f1 = open(os.path.join('data/train', 'pos_pnet.txt'), 'w')
+    f2 = open(os.path.join('data/train', 'neg_pnet.txt'), 'w')
+    f3 = open(os.path.join('data/train', 'part_pnet.txt'), 'w')
+elif mode == 'val':
+    img_dir = "data/preprocessed/ccpd_val_split"
+    yellow_dir = "data/preprocessed/ccpd_val_split/yellow"
+    pos_save_dir = "data/val/pnet/positive"
+    part_save_dir = "data/val/pnet/part"
+    neg_save_dir = "data/val/pnet/negative"
+
+    # store labels of positive, negative, part images
+    f1 = open(os.path.join('data/val', 'pos_pnet.txt'), 'w')
+    f2 = open(os.path.join('data/val', 'neg_pnet.txt'), 'w')
+    f3 = open(os.path.join('data/val', 'part_pnet.txt'), 'w')
 
 if not os.path.exists(pos_save_dir):
     os.mkdir(pos_save_dir)
@@ -23,12 +42,7 @@ if not os.path.exists(part_save_dir):
 if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
 
-# store labels of positive, negative, part images
-f1 = open(os.path.join('data', 'pos_pnet.txt'), 'w')
-f2 = open(os.path.join('data', 'neg_pnet.txt'), 'w')
-f3 = open(os.path.join('data', 'part_pnet.txt'), 'w')
-
-dataset = ImageFolder.TrainFolder(directory=img_dir)
+dataset = CCPDDataset.CCPDDataset(directory=img_dir)
 yellow_dataset = YellowPlateDataset(directory=yellow_dir)
 
 p_idx = 0  # positive
@@ -43,8 +57,6 @@ for path, points in yellow_dataset:
 print(f'{len(image_list)} in total')
 for path, points in image_list:
     im_path = path
-
-    basename = os.path.basename(path)
 
     boxes = np.zeros((1, 4), dtype=np.int32)
     boxes[0, :] = points

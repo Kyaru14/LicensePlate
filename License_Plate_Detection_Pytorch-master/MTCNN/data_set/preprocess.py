@@ -35,24 +35,24 @@ idx_train = 0
 idx_val = 0
 for i in range(len(img_paths)):
     filename = img_paths[i]
-    basename = os.path.basename(filename)   
+    basename = os.path.basename(filename)
     img = cv2.imread(filename)
-        
-    idx += 1 
-    
+
+    idx += 1
+
     if idx % 100 == 0:
         print("%d images done" % idx)
-    
+
     if idx % 4 == 0:
-        save = save_dir_val+'/'+basename     
+        save = save_dir_val + '/' + basename
         cv2.imwrite(save, img)
         idx_val += 1
     else:
-        save = save_dir_train+'/'+basename
+        save = save_dir_train + '/' + basename
         cv2.imwrite(save, img)
         idx_train += 1
 
     if idx == args.size:
-        break   
-        
+        break
+
 print('image data processing done, write %d training images, %d val images' % (idx_train, idx_val))

@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import cv2
 
+
 class ListDataset(Dataset):
     def __init__(self, list_path):
         with open(list_path, 'r') as file:
@@ -15,20 +16,20 @@ class ListDataset(Dataset):
 
         annotation = self.img_files[index % len(self.img_files)].strip().split(' ')
 
-        #---------
+        # ---------
         #  Image
-        #---------
+        # ---------
 
         img = cv2.imread(annotation[0])
-        img = img[:,:,::-1]
+        img = img[:, :, ::-1]
         img = np.asarray(img, 'float32')
         img = img.transpose((2, 0, 1))
         img = (img - 127.5) * 0.0078125
         input_img = torch.FloatTensor(img)
 
-        #---------
+        # ---------
         #  Label
-        #---------
+        # ---------
 
         label = int(annotation[1])
         bbox_target = np.zeros((4,))
@@ -43,6 +44,7 @@ class ListDataset(Dataset):
         sample = {'input_img': input_img, 'label': label, 'bbox_target': bbox_target, 'landmark': landmark}
 
         return sample
+
 
 if __name__ == '__main__':
 
@@ -85,7 +87,7 @@ if __name__ == '__main__':
     #     cv2.circle(test_image, (int(landmark_test[j, 0]), int(landmark_test[j, 1])), 2, (0, 255, 0),1)
 
     # for j in range(5):
-        # cv2.circle(test_image, (int(landmark_sim[j, 0]), int(landmark_sim[j, 1])), 2, (0, 255, 0),1)
+    # cv2.circle(test_image, (int(landmark_sim[j, 0]), int(landmark_sim[j, 1])), 2, (0, 255, 0),1)
 
     # cv2.imshow('example', test_image)
     # cv2.waitKey(0)

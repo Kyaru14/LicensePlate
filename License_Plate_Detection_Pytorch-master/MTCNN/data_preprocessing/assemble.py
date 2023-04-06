@@ -1,13 +1,12 @@
-
 import os
 import numpy.random as npr
 import numpy as np
 
+
 def assemble_data(output_file, anno_file_list=[]):
+    # assemble the pos, neg, part annotations to one file
 
-    #assemble the pos, neg, part annotations to one file
-
-    if len(anno_file_list)==0:
+    if len(anno_file_list) == 0:
         return 0
 
     if os.path.exists(output_file):
@@ -32,6 +31,6 @@ def assemble_data(output_file, anno_file_list=[]):
             for idx in idx_keep:
                 # write lables of pos, neg, part images
                 f.write(anno_lines[idx])
-                chose_count+=1
+                chose_count += 1
 
     return chose_count

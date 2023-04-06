@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 import os
 import torch
 from dataset.AnnoListDataset import AnnoListDataset
@@ -9,14 +8,18 @@ import copy
 import torch.nn as nn
 from tqdm import tqdm
 
+sys.path.append('..')
+
+
 def weights_init(m):
     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
         nn.init.xavier_uniform_(m.weight.data)
         nn.init.constant_(m.bias, 0.1)
 
+
 batch_size = 512
-train_dataset = AnnoListDataset(list_path='data/train/anno_store/imglist_anno_12.txt')
-val_dataset = AnnoListDataset(list_path='data/train/anno_store/imglist_anno_12_val.txt')
+train_dataset = AnnoListDataset(list_path='data/train/imglist_pnet.txt')
+val_dataset = AnnoListDataset(list_path='data/val/imglist_pnet.txt')
 with train_dataset, val_dataset:
     dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True),
                    'val': torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True)}
@@ -28,7 +31,7 @@ with train_dataset, val_dataset:
 
     # load the model and weights for initialization
     model = PNet(is_train=True).to(device)
-    state_dict = torch.load('data/net/pnet_Weights')
+    state_dict = torch.load('data/net/pnet.weights', map_location=torch.device('cpu'))
     model.load_state_dict(state_dict)
     model.apply(weights_init)
     print("Pnet loaded")
@@ -45,9 +48,9 @@ with train_dataset, val_dataset:
     loss_cls = nn.CrossEntropyLoss()
     loss_offset = nn.MSELoss()
 
-    num_epochs = 16
+    num_epochs = 40
     for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs-1))
+        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
         # Each epoch has a training and validation phase
@@ -100,13 +103,13 @@ with train_dataset, val_dataset:
                     num_gt = len(valid_gt_label)
 
                     if len(valid_gt_label) != 0:
-                        loss += 0.02*loss_cls(valid_pred_label, valid_gt_label)
+                        loss += 0.02 * loss_cls(valid_pred_label, valid_gt_label)
                         cls_loss = loss_cls(valid_pred_label, valid_gt_label).item()
                         pred = torch.max(valid_pred_label, 1)[1]
                         eval_correct = (pred == valid_gt_label).sum().item()
 
                     if len(valid_gt_offset) != 0:
-                        loss += 0.6*loss_offset(valid_pred_offset, valid_gt_offset)
+                        loss += 0.6 * loss_offset(valid_pred_offset, valid_gt_offset)
                         offset_loss = loss_offset(valid_pred_offset, valid_gt_offset).item()
 
                     # backward + optimize only if in training phase
@@ -115,9 +118,9 @@ with train_dataset, val_dataset:
                         optimizer.step()
 
                     # statistics
-                    running_loss += loss.item()*batch_size
-                    running_loss_cls += cls_loss*batch_size
-                    running_loss_offset += offset_loss*batch_size
+                    running_loss += loss.item() * batch_size
+                    running_loss_cls += cls_loss * batch_size
+                    running_loss_offset += offset_loss * batch_size
                     running_correct += eval_correct
                     running_gt += num_gt
 
@@ -130,7 +133,7 @@ with train_dataset, val_dataset:
                   .format(phase, epoch_loss, epoch_accuracy, epoch_loss_cls, epoch_loss_offset))
             with open(train_logging_file, 'a') as f:
                 f.write('{} Loss: {:.4f} accuracy: {:.4f} cls Loss: {:.4f} offset Loss: {:.4f}'
-                        .format(phase, epoch_loss, epoch_accuracy, epoch_loss_cls, epoch_loss_offset)+'\n')
+                        .format(phase, epoch_loss, epoch_accuracy, epoch_loss_cls, epoch_loss_offset) + '\n')
             f.close()
 
             # deep copy the model
@@ -143,4 +146,4 @@ with train_dataset, val_dataset:
     print('Best loss: {:4f}'.format(best_loss))
 
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), 'weights\pnet_Weights')
+    torch.save(model.state_dict(), 'data/net/pnet.weights')

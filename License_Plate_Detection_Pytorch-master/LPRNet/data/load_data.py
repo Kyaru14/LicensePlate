@@ -9,14 +9,15 @@ import os
 CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
          '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
          '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
-         '新', 
+         '新',
          '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
          'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
          'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
          'W', 'X', 'Y', 'Z', 'I', 'O', '-'
          ]
 
-CHARS_DICT = {char:i for i, char in enumerate(CHARS)}
+CHARS_DICT = {char: i for i, char in enumerate(CHARS)}
+
 
 class LPRDataLoader(Dataset):
     def __init__(self, img_dir, imgSize, PreprocFun=None):
@@ -72,7 +73,8 @@ class LPRDataLoader(Dataset):
             return False
         else:
             return True
-        
+
+
 def collate_fn(batch):
     imgs = []
     labels = []
@@ -85,15 +87,15 @@ def collate_fn(batch):
     labels = np.asarray(labels).flatten().astype(np.float32)
 
     return (torch.stack(imgs, 0), torch.from_numpy(labels), lengths)
-        
+
+
 if __name__ == "__main__":
-    
-    dataset = LPRDataLoader(['validation'], (94, 24))   
+
+    dataset = LPRDataLoader(['validation'], (94, 24))
     dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=2, collate_fn=collate_fn)
     print('data length is {}'.format(len(dataset)))
     for imgs, labels, lengths in dataloader:
         print('image batch shape is', imgs.shape)
         print('label batch shape is', labels.shape)
-        print('label length is', len(lengths))      
+        print('label length is', len(lengths))
         break
-    
