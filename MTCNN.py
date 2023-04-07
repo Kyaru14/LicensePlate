@@ -159,16 +159,17 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='MTCNN Demo')
     parser.add_argument("--test_image", dest='test_image', help=
-    "test image path", default=r"License_Plate_Detection_Pytorch-master/test/101.jpg",
+    "test image path", default=r"images/106.jpg",
                         type=str)
     parser.add_argument("--scale", dest='scale', help=
-    "scale the iamge", default=1, type=int)
+    "scale the image", default=0.2, type=int)
     parser.add_argument('--mini_lp', dest='mini_lp', help=
-    "Minimum lp to be detected. derease to increase accuracy. Increase to increase speed",
+    "Minimum lp to be detected. Decrease to increase accuracy. Increase to increase speed",
                         default=(50, 15), type=int)
 
     args = parser.parse_args()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cpu')
 
     image = cv2.imread(args.test_image)
     image = cv2.resize(image, (0, 0), fx=args.scale, fy=args.scale, interpolation=cv2.INTER_CUBIC)
@@ -184,7 +185,7 @@ if __name__ == '__main__':
         bbox = bboxes[i, :4]
         cv2.rectangle(image, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 0, 255), 2)
 
-    image = cv2.resize(image, (0, 0), fx=1 / args.scale, fy=1 / args.scale, interpolation=cv2.INTER_CUBIC)
+    # image = cv2.resize(image, (0, 0), fx=1 / args.scale, fy=1 / args.scale, interpolation=cv2.INTER_CUBIC)
     cv2.imshow('image', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

@@ -20,18 +20,16 @@ class CCPDDataset(data.Dataset):
     def __getitem__(self, item):
         image_file = self.files[item]
         img = cv2.imread(image_file.file_path)
-        img = img[:, :, ::-1]
-        img = np.asarray(img, 'float32')
-        img = img.transpose((2, 0, 1))
-        img = (img - 127.5) * 0.0078125
-        input_img = torch.FloatTensor(img)
+        input_img = img[:, :, ::-1]
+        input_img = np.asarray(input_img, 'float32')
+        input_img = input_img.transpose((2, 0, 1))
+        input_img = (input_img - 127.5) * 0.0078125
+        input_img = torch.FloatTensor(input_img)
 
         label = 1
         bbox_target = np.array(image_file.points)
 
-        image = {'input_img': input_img, 'label': label, 'bbox_target': bbox_target}
-
-        return image
+        return input_img, label, bbox_target
     def __len__(self):
         return len(self.files)
 
