@@ -1,14 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jul  3 13:14:16 2019
-
-@author: xingyu
-"""
-
 import torch.nn as nn
 import torch
-
 
 class small_basic_block(nn.Module):
     def __init__(self, ch_in, ch_out):
@@ -22,14 +13,14 @@ class small_basic_block(nn.Module):
             nn.ReLU(),
             nn.Conv2d(ch_out // 4, ch_out, kernel_size=1),
         )
-
     def forward(self, x):
         return self.block(x)
 
-
 class LPRNet(nn.Module):
-    def __init__(self, class_num, dropout_rate):
+    def __init__(self, lpr_max_len, phase, class_num, dropout_rate):
         super(LPRNet, self).__init__()
+        self.phase = phase
+        self.lpr_max_len = lpr_max_len
         self.class_num = class_num
         self.backbone = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1),  # 0
@@ -57,8 +48,7 @@ class LPRNet(nn.Module):
             nn.ReLU(),  # *** 22 ***
         )
         self.container = nn.Sequential(
-            nn.Conv2d(in_channels=256 + class_num + 128 + 64, out_channels=self.class_num, kernel_size=(1, 1),
-                      stride=(1, 1)),
+            nn.Conv2d(in_channels=448 + self.class_num, out_channels=self.class_num, kernel_size=(1, 1), stride=(1, 1)),
             # nn.BatchNorm2d(num_features=self.class_num),
             # nn.ReLU(),
             # nn.Conv2d(in_channels=self.class_num, out_channels=self.lpr_max_len+1, kernel_size=3, stride=2),
@@ -90,20 +80,10 @@ class LPRNet(nn.Module):
         return logits
 
 
-CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
-         '苏', '浙', '皖', '闽', '赣', '鲁', '豫', '鄂', '湘', '粤',
-         '桂', '琼', '川', '贵', '云', '藏', '陕', '甘', '青', '宁',
-         '新',
-         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K',
-         'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-         'W', 'X', 'Y', 'Z', 'I', 'O', '-'
-         ]
+def build_lprnet(lpr_max_len=8, phase=False, class_num=66, dropout_rate=0.5):
+    Net = LPRNet(lpr_max_len, phase, class_num, dropout_rate)
 
-if __name__ == "__main__":
-    from torchsummary import summary
-
-    lprnet = LPRNet(class_num=len(CHARS), dropout_rate=0)
-    print(lprnet)
-
-    summary(lprnet, (3, 24, 94), device="cpu")
+    if phase == "train":
+        return Net.train()
+    else:
+        return Net.eval()

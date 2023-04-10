@@ -1,15 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul  8 13:18:36 2019
-
-@author: xingyu
-"""
-
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-
 
 class STNet(nn.Module):
 
@@ -45,8 +36,7 @@ class STNet(nn.Module):
         x = F.grid_sample(x, grid)
 
         return x
-
-
+    
 if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = STNet().to(device)

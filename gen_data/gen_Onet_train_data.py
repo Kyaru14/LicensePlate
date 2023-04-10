@@ -1,22 +1,37 @@
-"""
-    generate positive, negative, positive images whose size are 24*24 from Pnet and feed into RNet
-"""
 import sys
-
-sys.path.append('../..')
+sys.path.append('../../..')
 import cv2
 import os
-import numpy as np
-from utils.util import *
+from util import *
 import torch
-import random
-from imutils import paths
-from MTCNN import create_mtcnn_net
+from MTCNN_eval import create_mtcnn_net
+from dataset.CCPD import CCPDDataset
+from dataset.YellowPlateDataset import YellowPlateDataset
 
-img_dir = "../data_set/ccpd_val"
-pos_save_dir = "../data_set/val/24/positive"
-part_save_dir = "../data_set/val/24/part"
-neg_save_dir = "../data_set/val/24/negative"
+mode = 'val'
+
+if mode == 'train':
+    img_dir = "../data/preprocessed/ccpd_train_split"
+    yellow_dir = "../data/preprocessed/ccpd_train_split/yellow"
+    pos_save_dir = "data/train/onet/positive"
+    part_save_dir = "data/train/onet/part"
+    neg_save_dir = "data/train/onet/negative"
+
+    # store labels of positive, negative, part images
+    f1 = open(os.path.join('../data/train', 'pos_onet.txt'), 'w')
+    f2 = open(os.path.join('../data/train', 'neg_onet.txt'), 'w')
+    f3 = open(os.path.join('../data/train', 'part_onet.txt'), 'w')
+elif mode == 'val':
+    img_dir = "../data/preprocessed/ccpd_val_split"
+    yellow_dir = "../data/preprocessed/ccpd_val_split/yellow"
+    pos_save_dir = "data/val/onet/positive"
+    part_save_dir = "data/val/onet/part"
+    neg_save_dir = "data/val/onet/negative"
+
+    # store labels of positive, negative, part images
+    f1 = open(os.path.join('data/val', 'pos_onet.txt'), 'w')
+    f2 = open(os.path.join('data/val', 'neg_onet.txt'), 'w')
+    f3 = open(os.path.join('data/val', 'part_onet.txt'), 'w')
 
 if not os.path.exists(pos_save_dir):
     os.mkdir(pos_save_dir)
@@ -25,42 +40,32 @@ if not os.path.exists(part_save_dir):
 if not os.path.exists(neg_save_dir):
     os.mkdir(neg_save_dir)
 
-# store labels of positive, negative, part images
-f1 = open(os.path.join('anno_store', 'pos_24_val.txt'), 'w')
-f2 = open(os.path.join('anno_store', 'neg_24_val.txt'), 'w')
-f3 = open(os.path.join('anno_store', 'part_24_val.txt'), 'w')
-
-# anno_file: store labels of the wider face training data
-img_paths = []
-img_paths += [el for el in paths.list_images(img_dir)]
-random.shuffle(img_paths)
-num = len(img_paths)
-print("%d pics in total" % num)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 image_size = (94, 24)
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+dataset = CCPDDataset.CCPDDataset(directory=img_dir)
+yellow_dataset = YellowPlateDataset(directory=yellow_dir)
+
 p_idx = 0  # positive
 n_idx = 0  # negative
 d_idx = 0  # dont care
 idx = 0
-for annotation in img_paths:
-    im_path = annotation
-    print(im_path)
-
-    basename = os.path.basename(im_path)
-    imgname, suffix = os.path.splitext(basename)
-    imgname_split = imgname.split('-')
-    rec_x1y1 = imgname_split[2].split('_')[0].split('&')
-    rec_x2y2 = imgname_split[2].split('_')[1].split('&')
-    x1, y1, x2, y2 = int(rec_x1y1[0]), int(rec_x1y1[1]), int(rec_x2y2[0]), int(rec_x2y2[1])
+image_list = []
+for file in dataset.files:
+    image_list.append((file.file_path, file.bbox))
+for path, points in yellow_dataset:
+    image_list.append((path, points))
+print(f'{len(image_list)} in total')
+for path, points in image_list:
+    im_path = path
 
     boxes = np.zeros((1, 4), dtype=np.int32)
-    boxes[0, 0], boxes[0, 1], boxes[0, 2], boxes[0, 3] = x1, y1, x2, y2
+    boxes[0, :] = points
 
     image = cv2.imread(im_path)
 
-    bboxes = create_mtcnn_net(image, 50, device, p_model_path='../train/pnet.weights', r_model_path=None,
-                              o_model_path=None)
+    bboxes = create_mtcnn_net(image, (50, 15), device, p_model_path='../data/net/pnet.weights', o_model_path=None)
     dets = np.round(bboxes[:, 0:4])
 
     if dets.shape[0] == 0:
@@ -86,7 +91,7 @@ for annotation in img_paths:
         resized_im = cv2.resize(cropped_im, image_size, interpolation=cv2.INTER_LINEAR)
 
         # save negative images and write label
-        if np.max(Iou) < 0.3 and n_idx < 3.2 * p_idx + 1:
+        if np.max(Iou) < 0.3 and n_idx < 3.2*p_idx+1:
             # Iou with all gts must below 0.3
             save_file = os.path.join(neg_save_dir, "%s.jpg" % n_idx)
             f2.write(save_file + ' 0\n')
@@ -112,7 +117,7 @@ for annotation in img_paths:
                 cv2.imwrite(save_file, resized_im)
                 p_idx += 1
 
-            elif np.max(Iou) >= 0.4 and d_idx < 1.2 * p_idx + 1:
+            elif np.max(Iou) >= 0.4 and d_idx < 1.2*p_idx + 1:
                 save_file = os.path.join(part_save_dir, "%s.jpg" % d_idx)
                 f3.write(save_file + ' -1 %.2f %.2f %.2f %.2f\n' % (
                     offset_x1, offset_y1, offset_x2, offset_y2))
@@ -124,3 +129,10 @@ for annotation in img_paths:
 f1.close()
 f2.close()
 f3.close()
+
+
+
+
+
+
+

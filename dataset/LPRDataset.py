@@ -1,5 +1,4 @@
-import torch
-from torch.utils.data import *
+import torch.utils.data as data
 from imutils import paths
 import numpy as np
 import random
@@ -19,15 +18,15 @@ CHARS = ['京', '沪', '津', '渝', '冀', '晋', '蒙', '辽', '吉', '黑',
 CHARS_DICT = {char: i for i, char in enumerate(CHARS)}
 
 
-class LPRDataLoader(Dataset):
-    def __init__(self, img_dir, imgSize, PreprocFun=None):
+class LPRDataLoader(data.Dataset):
+    def __init__(self, img_dir, imgSize, lpr_max_len, PreprocFun=None):
         self.img_dir = img_dir
         self.img_paths = []
         for i in range(len(img_dir)):
             self.img_paths += [el for el in paths.list_images(img_dir[i])]
-        random.shuffle(self.img_paths)
+        # random.shuffle(self.img_paths)
         self.img_size = imgSize
-
+        self.lpr_max_len = lpr_max_len
         if PreprocFun is not None:
             self.PreprocFun = PreprocFun
         else:
@@ -38,7 +37,11 @@ class LPRDataLoader(Dataset):
 
     def __getitem__(self, index):
         filename = self.img_paths[index]
-        Image = cv2.imread(filename)
+        # print(filename.encode('gbk').decode('utf-8'))
+
+        Image = cv2.imdecode(np.fromfile(filename, dtype=np.uint8), -1)
+
+        # Image = cv2.imread(filename)
         height, width, _ = Image.shape
         if height != self.img_size[1] or width != self.img_size[0]:
             Image = cv2.resize(Image, self.img_size)
@@ -49,6 +52,8 @@ class LPRDataLoader(Dataset):
         imgname = imgname.split("-")[0].split("_")[0]
         label = list()
         for c in imgname:
+            # one_hot_base = np.zeros(len(CHARS))
+            # one_hot_base[CHARS_DICT[c]] = 1
             label.append(CHARS_DICT[c])
 
         if len(label) == 8:
@@ -73,29 +78,3 @@ class LPRDataLoader(Dataset):
             return False
         else:
             return True
-
-
-def collate_fn(batch):
-    imgs = []
-    labels = []
-    lengths = []
-    for _, sample in enumerate(batch):
-        img, label, length = sample
-        imgs.append(torch.from_numpy(img))
-        labels.extend(label)
-        lengths.append(length)
-    labels = np.asarray(labels).flatten().astype(np.float32)
-
-    return (torch.stack(imgs, 0), torch.from_numpy(labels), lengths)
-
-
-if __name__ == "__main__":
-
-    dataset = LPRDataLoader(['validation'], (94, 24))
-    dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=2, collate_fn=collate_fn)
-    print('data length is {}'.format(len(dataset)))
-    for imgs, labels, lengths in dataloader:
-        print('image batch shape is', imgs.shape)
-        print('label batch shape is', labels.shape)
-        print('label length is', len(lengths))
-        break

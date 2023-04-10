@@ -2,7 +2,7 @@ import sys
 import os
 import torch
 from dataset.AnnoListDataset import AnnoListDataset
-from model.MTCNN_nets import PNet
+from model.MTCNN import PNet
 import time
 import copy
 import torch.nn as nn

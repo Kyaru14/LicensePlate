@@ -1,31 +1,27 @@
 import sys
-sys.path.append('..')
+sys.path.append('../..')
 import cv2
-import random
 import os
-import numpy as np
-from utils.util import *
+from util import *
 from dataset.CCPD import CCPDDataset
 from dataset.YellowPlateDataset import YellowPlateDataset
-
-from tqdm import tqdm
 
 mode = 'val'
 
 if mode == 'train':
-    img_dir = "data/preprocessed/ccpd_train_split"
-    yellow_dir = "data/preprocessed/ccpd_train_split/yellow"
+    img_dir = "../data/preprocessed/ccpd_train_split"
+    yellow_dir = "../data/preprocessed/ccpd_train_split/yellow"
     pos_save_dir = "data/train/pnet/positive"
     part_save_dir = "data/train/pnet/part"
     neg_save_dir = "data/train/pnet/negative"
 
     # store labels of positive, negative, part images
-    f1 = open(os.path.join('data/train', 'pos_pnet.txt'), 'w')
-    f2 = open(os.path.join('data/train', 'neg_pnet.txt'), 'w')
-    f3 = open(os.path.join('data/train', 'part_pnet.txt'), 'w')
+    f1 = open(os.path.join('../data/train', 'pos_pnet.txt'), 'w')
+    f2 = open(os.path.join('../data/train', 'neg_pnet.txt'), 'w')
+    f3 = open(os.path.join('../data/train', 'part_pnet.txt'), 'w')
 elif mode == 'val':
-    img_dir = "data/preprocessed/ccpd_val_split"
-    yellow_dir = "data/preprocessed/ccpd_val_split/yellow"
+    img_dir = "../data/preprocessed/ccpd_val_split"
+    yellow_dir = "../data/preprocessed/ccpd_val_split/yellow"
     pos_save_dir = "data/val/pnet/positive"
     part_save_dir = "data/val/pnet/part"
     neg_save_dir = "data/val/pnet/negative"
