@@ -38,9 +38,9 @@ class AnnoListDataset(data.Dataset):
         if len(annotation[2:]) == 4:
             bbox_target = np.array(annotation[2:6]).astype(float)
 
-        sample = {'input_img': input_img, 'label': label, 'bbox_target': bbox_target}
+        # sample = {'input_img': input_img, 'label': label, 'bbox_target': bbox_target}
 
-        return sample
+        return input_img, label, bbox_target
 
     def __enter__(self):
         self.preloaded_data = []

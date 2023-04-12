@@ -176,8 +176,8 @@ if __name__ == '__main__':
 
     start = time.time()
 
-    bboxes = create_mtcnn_net(image, args.mini_lp, device, p_model_path='data/net/pnet.weights',
-                              o_model_path='data/net/onet.weights')
+    bboxes = create_mtcnn_net(image, args.mini_lp, device, p_model_path='data/images/pnet.weights',
+                              o_model_path='data/images/onet.weights')
 
     print("image predicted in {:2.3f} seconds".format(time.time() - start))
 

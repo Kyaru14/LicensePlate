@@ -1,7 +1,7 @@
 import sys
 import torch
 from dataset.AnnoListDataset import AnnoListDataset
-from model.MTCNN import ONet
+from model.MTCNN_nets import ONet
 import time
 import copy
 import torch.nn as nn
@@ -17,7 +17,7 @@ def weights_init(m):
         nn.init.constant_(m.bias, 0.1)
 
 
-batch_size = 512
+batch_size = 1024
 train_dataset = AnnoListDataset(list_path='data/train/imglist_onet.txt')
 val_dataset = AnnoListDataset(list_path='data/val/imglist_onet.txt')
 with train_dataset, val_dataset:
@@ -46,7 +46,7 @@ with train_dataset, val_dataset:
     loss_cls = nn.CrossEntropyLoss()
     loss_offset = nn.MSELoss()
 
-    num_epochs = 15
+    num_epochs = 10
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -63,10 +63,9 @@ with train_dataset, val_dataset:
             running_gt = 0.0
 
             # iterate over data
-            for i_batch, sample_batched in enumerate(tqdm(dataloaders[phase])):
+            for i_batch, (input_img, label, bbox_target) in enumerate(tqdm(dataloaders[phase])):
 
-                input_images, gt_label, gt_offset = sample_batched['input_img'], \
-                    sample_batched['label'], sample_batched['bbox_target']
+                input_images, gt_label, gt_offset = input_img, label, bbox_target
                 input_images = input_images.to(device)
                 gt_label = gt_label.to(device)
                 # print('gt_label is ', gt_label)

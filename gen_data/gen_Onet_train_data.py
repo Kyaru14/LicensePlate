@@ -65,7 +65,7 @@ for path, points in image_list:
 
     image = cv2.imread(im_path)
 
-    bboxes = create_mtcnn_net(image, (50, 15), device, p_model_path='../data/net/pnet.weights', o_model_path=None)
+    bboxes = create_mtcnn_net(image, (50, 15), device, p_model_path='../data/images/pnet.weights', o_model_path=None)
     dets = np.round(bboxes[:, 0:4])
 
     if dets.shape[0] == 0:
