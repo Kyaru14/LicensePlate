@@ -1,7 +1,7 @@
 import sys
 import torch
 from dataset.AnnoListDataset import AnnoListDataset
-from model.MTCNN_nets import ONet
+from model.MTCNN import ONet
 import time
 import copy
 import torch.nn as nn
@@ -143,4 +143,4 @@ with train_dataset, val_dataset:
     print('Best loss: {:4f}'.format(best_loss))
 
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), 'data/net/onet.weights')
+    torch.save(model.state_dict(), 'data/backup/final net/onet.weights')

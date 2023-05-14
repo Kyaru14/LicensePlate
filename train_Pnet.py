@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
         # load the model and weights for initialization
         model = PNet(is_train=True).to(device)
-        state_dict = torch.load('data/net/pnet.weights', map_location=torch.device('cpu'))
+        state_dict = torch.load('data/backup/final net/pnet.weights', map_location=torch.device('cpu'))
         model.load_state_dict(state_dict)
         model.apply(weights_init)
         print("Pnet loaded")
@@ -147,4 +147,4 @@ if __name__ == '__main__':
         print('Best loss: {:4f}'.format(best_loss))
 
         model.load_state_dict(best_model_wts)
-        torch.save(model.state_dict(), 'data/net/pnet.weights')
+        torch.save(model.state_dict(), 'data/backup/final net/pnet.weights')

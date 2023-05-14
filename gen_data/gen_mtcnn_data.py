@@ -18,9 +18,9 @@ for i, directory in enumerate(dirs):
     count = 0
     for _ in tqdm(range(train_num_files[i]), desc=directory):
         copyfile(src=os.path.join(directory, image_paths[count]),
-                 dst=os.path.join("data/preprocessed/ccpd_train_split", image_paths[count]))
+                 dst=os.path.join("../data/preprocessed/ccpd_train_split", image_paths[count]))
         count += 1
     for _ in tqdm(range(val_num_files[i]), desc=directory):
         copyfile(src=os.path.join(directory, image_paths[count]),
-                 dst=os.path.join("data/preprocessed/ccpd_val_split", image_paths[count]))
+                 dst=os.path.join("../data/preprocessed/ccpd_val_split", image_paths[count]))
         count += 1
