@@ -1,7 +1,5 @@
 import json
 import os
-import random
-import sys
 
 import torch
 import cv2
