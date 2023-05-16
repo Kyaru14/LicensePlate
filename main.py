@@ -1,9 +1,12 @@
 import json
 import os
+import random
+import sys
 
 import torch
 import cv2
 import numpy as np
+import csv
 
 import MTCNN_eval
 import model.STN as STN
@@ -11,14 +14,15 @@ import model.LPRNet as LPRNet
 import dataset.LPRDataset as LPRDataLoader
 import LPRNet_eval
 
+from dataset.CCPD.ImageFile import ImageFile
+
 model_paths = {
     'p_net_path': 'data/net/pnet.weights',
     'o_net_path': 'data/net/onet.weights',
     'stn_net_path': 'data/net/Final_STN_model(1).pth',
     'lpr_net_path': 'data/net/Final_LPRNet_model(1).pth'
 }
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device('cpu')
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 STNet = STN.STNet()
 STNet.load_state_dict(torch.load(model_paths['stn_net_path']))
@@ -72,24 +76,71 @@ def detect_plate(image_path, *, scale, minimum_lp, model_paths, device):
     return result, image
 
 
-if __name__ == '__main__':
+def test():
     with open('data/label.json', 'r') as fp:
         label = json.load(fp)
     dir = 'data/images'
     metric = [0., len(os.listdir(dir))]
-    for i, path in enumerate(os.listdir(dir)):
-        print(f'{i}/{metric[1]}', path)
+    csv_lines = [['图片', '识别位置', '识别结果', '真值', '是否预测正确']]
+    f = open('data/result.csv', 'w+')
+    image_list = os.listdir(dir)
+    image_list = sorted(image_list, key=lambda x: int(os.path.basename(x[:-4])), reverse=False)
+    for i, path in enumerate(image_list):
+        print(f'{i + 1}/{metric[1]}', path)
         result, image = detect_plate(os.path.join(dir, path), scale='auto', minimum_lp=(50, 15),
                                      model_paths=model_paths,
                                      device=device)
         cv2.imencode('.jpg', image)[1].tofile(f'data/result/{path}')
         print('expected:', label[path])
-        for r in result:
+        lines = []
+        for j, r in enumerate(result):
             print('predict:', r[1])
             if r[1] == label[path]:
                 metric[0] += 1
+                lines.append(
+                    [os.path.basename(path) if j == 0 else '', r[0], r[1], label[path] if j == 0 else '', '正确'])
                 break
+            lines.append([os.path.basename(path) if j == 0 else '', r[0], r[1], label[path] if j == 0 else '', ''])
+        csv_lines += lines
         # cv2.imshow('image', image)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
+    csv_lines.append(['准确率', f'{metric[0] / metric[1] * 100}%'])
+    csv.writer(f, lineterminator='\n').writerows(csv_lines)
     print(f'Accuracy: {metric[0] / metric[1] * 100:.6f}%')
+
+
+def test_ccpd():
+    dir = 'data/ccpd_images'
+    metric = [0., len(os.listdir(dir))]
+    csv_lines = [['图片', '识别位置', '定位真值', '识别结果', '车牌真值', '是否预测正确']]
+    image_list = os.listdir(dir)
+    for i, path in enumerate(image_list):
+        print(f'{i + 1}/{metric[1]}', path)
+        image_file = ImageFile(path)
+        result, image = detect_plate(os.path.join(dir, path), scale=1, minimum_lp=(50, 15),
+                                     model_paths=model_paths,
+                                     device=device)
+        cv2.imencode('.jpg', image)[1].tofile(f'data/ccpd_result/{path}')
+        print('expected:', image_file.label)
+        lines = []
+        if len(result) == 0:
+            lines.append([os.path.basename(path), '', image_file.points, '', image_file.label, '错误'])
+            continue
+        points, l_pred = result[0]
+        print('predict:', l_pred)
+        if l_pred == image_file.label:
+            metric[0] += 1
+            lines.append([os.path.basename(path), points, image_file.points, l_pred, image_file.label, '正确'])
+        else:
+            lines.append([os.path.basename(path), points, image_file.points, l_pred, image_file.label, '错误'])
+        csv_lines += lines
+    csv_lines.append(['准确率', f'{metric[0] / metric[1] * 100}%'])
+    with open('data/ccpd_result.csv', 'w+') as f:
+        csv.writer(f, lineterminator='\n').writerows(csv_lines)
+    print(f'Accuracy: {metric[0] / metric[1] * 100:.6f}%')
+
+
+if __name__ == '__main__':
+    # test()
+    test_ccpd()
